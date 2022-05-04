@@ -9,15 +9,16 @@
 *.user
 *.userosscache
 *.sln.docstates
-
+NMKSolver.vcxproj.FileListAbsolute.txt
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
-
+*.idb
+*.exe.recipe
 # Mono auto generated files
 mono_crash.*
 
 # Build results
-[Dd]ebug/
+[Nn]MKSolver.tlog
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
@@ -27,9 +28,7 @@ x86/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
 bld/
-[Bb]in/
 [Oo]bj/
-[Oo]ut/
 [Ll]og/
 [Ll]ogs/
 
