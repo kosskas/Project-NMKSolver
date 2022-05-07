@@ -21,20 +21,20 @@ enum State {
 int** createMap(int n, int m);
 void freeMemory(int** arr, int n);
 void printMap(int** arr, int n, int m);
+bool checkWinCond(int** T, int N, int M, int K, int ActivePlayer);
+bool checkHorizontalAxis(int** T, int N, int M, int K, int ActivePlayer);
+bool checkVerticalAxis(int** T, int N, int M, int K, int ActivePlayer);
+bool checkVerticalAxis(int** T, int N, int M, int K, int ActivePlayer);
+bool checkDiagonalsAxis(int** T, int N, int M, int K, int ActivePlayer);
+bool checkAntiDiagonalsAxis(int** T, int N, int M, int K, int ActivePlayer);
 void generateAllPositionMoves(int** T, int N, int M, int K, int ActivePlayer);
 int countPosMoves(int** T, int N, int M);
-void generateAllMovesPrintWin(int** T, int N, int M, int K, int ActivePlayer);
-bool checkWinCond(int** T, int N, int M, int K, int ActivePlayer, int y, int x);
-int checkMapIfWin(int** T, int N, int M, int K);
-bool checkHorizontalAxis(int** T, int N, int M, int K, int y, int x);
-bool checkVerticalAxis(int** T, int N, int M, int K, int y, int x);
-bool checkVerticalAxis(int** T, int N, int M, int K,  int y, int x);
-bool checkObliqueAxis(int** T, int N, int M, int K,  int y, int x);
+void generateAllPositionMovesCutIfWin(int** T, int N, int M, int K, int ActivePlayer);
+
 int main() {
     ios_base::sync_with_stdio(0);
     cin.tie(0);
     cout.tie(0);
-    //skosy
     int N = 0, M = 0, K, player;
     int** T = NULL;
     char command[MAX_CMD_LENGTH];
@@ -43,20 +43,25 @@ int main() {
         if (feof(stdin) != 0) {
             break;
         }
-        if (checkString(command, "GEN_ALL_POS_MOV")) {
+        else if (checkString(command, "GEN_ALL_POS_MOV")) {
             cin >> N >> M >> K >> player;
             T = createMap(N, M);
             for (int y = 0; y < N; y++) {
                 for (int x = 0; x < M; x++) {
                     cin >> T[y][x];
                 }
-            }          
-            if (checkMapIfWin(T, N, M, K) == 0) {
-                generateAllPositionMoves(T, N, M, K, player);
+            } 
+            generateAllPositionMoves(T, N, M, K, player);          
+        }
+        else if (checkString(command, "GEN_ALL_POS_MOV_CUT_IF_GAME_OVER")) {
+            cin >> N >> M >> K >> player;
+            T = createMap(N, M);
+            for (int y = 0; y < N; y++) {
+                for (int x = 0; x < M; x++) {
+                    cin >> T[y][x];
+                }
             }
-            else
-                cout << 0 << endl;
-
+            generateAllPositionMovesCutIfWin(T, N, M, K, player);           
         }
     }
     freeMemory(T, N);
@@ -75,10 +80,11 @@ int** createMap(int n, int m) {
 void freeMemory(int** arr, int n) {
     if (arr) {
         for (int i = 0; i < n; i++) {
-            if (arr[i])
-                delete arr[i];
+            if (arr[i]) {
+                delete[] arr[i];
+            }
         }
-        delete arr;
+        delete[] arr;
     }
 }
 
@@ -89,6 +95,86 @@ void printMap(int** arr, int n, int m) {
         }
         cout << endl;
     }
+}
+
+bool checkWinCond(int** T, int N, int M, int K, int ActivePlayer) {
+    return checkHorizontalAxis(T, N, M, K, ActivePlayer)
+        || checkVerticalAxis(T, N, M, K, ActivePlayer)
+        || checkDiagonalsAxis(T, N, M, K, ActivePlayer)
+        || checkAntiDiagonalsAxis(T, N, M, K, ActivePlayer);
+}
+//poziom
+bool checkHorizontalAxis(int** T, int N, int M, int K, int ActivePlayer) {
+    for (int y = 0; y < N; y++) {
+        for (int x = 0; x + K - 1 < M; x++) {
+            if (T[y][x] == ActivePlayer) {
+                int k = 0;
+                for (k = 0; k < K; k++) {
+                    if (T[y][x] != T[y][x + k]) {
+                        break;
+                    }
+                    
+                }
+                if(k == K)
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+//pion
+bool checkVerticalAxis(int** T, int N, int M, int K, int ActivePlayer) {
+    for (int y = 0; y + K - 1 < N; y++) {
+        for (int x = 0; x < M; x++) {
+            if (T[y][x] == ActivePlayer) {
+                int k = 0;
+                for (k = 0; k < K; k++) {
+                    if (T[y][x] != T[y + k][x]) {
+                        break;
+                    }
+                }
+                if(k == K)
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool checkDiagonalsAxis(int** T, int N, int M, int K, int ActivePlayer) {
+    for (int y = 0; y + K - 1 < N; y++) {
+        for (int x = 0; x + K - 1 < M; x++) {
+            if (T[y][x] == ActivePlayer) {
+                int k = 0;
+                for (k = 0; k < K; k++) {
+                    if (T[y][x] != T[y + k][x + k]) {
+                        break;
+                    }
+                }
+                if(k == K)
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool checkAntiDiagonalsAxis(int** T, int N, int M, int K, int ActivePlayer) {
+    for (int y = 0; y + K - 1 < N; y++) {
+        for (int x = M - 1; x - K + 1 >= 0; x--) {
+            if (T[y][x] == ActivePlayer) {
+                int k = 0;
+                for (k = 0; k < K; k++) {
+                    if (T[y][x] != T[y + k][x - k]) {
+                        break;
+                    }
+                }
+                if(k == K)
+                    return true;
+            }
+        }
+    }
+    return false;
 }
 
 int countPosMoves(int** T, int N, int M) {
@@ -102,18 +188,11 @@ int countPosMoves(int** T, int N, int M) {
     return pos_moves;
 }
 
-int checkMapIfWin(int** T, int N, int M, int K) {
-    for (int y = 0; y < N; y++) {
-        for (int x = 0; x < M; x++) {
-            if (checkWinCond(T, N, M, K, FIRST_PLAYER, y, x))
-                return FIRST_PLAYER_WINS;
-            if (checkWinCond(T, N, M, K, SECOND_PLAYER, y, x))
-                return SECOND_PLAYER_WINS;
-        }
-    }
-    return 0;
-}
 void generateAllPositionMoves(int** T, int N, int M, int K, int ActivePlayer) {
+    if (checkWinCond(T, N, M, K, FIRST_PLAYER) || checkWinCond(T, N, M, K, SECOND_PLAYER)) {
+        cout << 0 << endl;
+        return;
+    }
     int pos_moves = countPosMoves(T, N, M);
     cout << pos_moves << endl;
     for (int y = 0; y < N; y++) {
@@ -127,76 +206,33 @@ void generateAllPositionMoves(int** T, int N, int M, int K, int ActivePlayer) {
     }
 }
 
-void generateAllMovesPrintWin(int** T, int N, int M, int K, int ActivePlayer) {
+void generateAllPositionMovesCutIfWin(int** T, int N, int M, int K, int ActivePlayer) {
+    if (checkWinCond(T, N, M, K, FIRST_PLAYER) || checkWinCond(T, N, M, K, SECOND_PLAYER)) {
+        cout << 0 << endl;
+        return;
+    }
+    for (int y = 0; y < N; y++) {
+        for (int x = 0; x < M; x++) {
+            if (T[y][x] == EMPTY) {
+                T[y][x] = ActivePlayer;
+                if (checkWinCond(T, N, M, K, ActivePlayer)) {
+                    cout << 1<<endl;
+                    printMap(T, N, M);
+                    return;
+                }
+                T[y][x] = EMPTY;
+            }
+        }
+    }
     int pos_moves = countPosMoves(T, N, M);
     cout << pos_moves << endl;
-    if (pos_moves > 0) {
-        for (int y = 0; y < N; y++) {
-            for (int x = 0; x < M; x++) {
-                if (T[y][x] == EMPTY) {
-                    T[y][x] = ActivePlayer;
-                    printMap(T, N, M);
-                    T[y][x] = EMPTY;
-                }
+    for (int y = 0; y < N; y++) {
+        for (int x = 0; x < M; x++) {
+            if (T[y][x] == EMPTY) {
+                T[y][x] = ActivePlayer;
+                printMap(T, N, M);
+                T[y][x] = EMPTY;
             }
         }
     }
-}
-
-bool checkHorizontalAxis(int** T, int N, int M, int K,int y, int x) {
-    for (int j = x; j + K - 1 < M; j++) {
-        for (int k = 0; k < K; k++) {
-            if (T[y][j] != T[y][j+k]) {
-                return false;
-            }
-        }
-        return true;
-    }
-    return false;
-}
-
-bool checkVerticalAxis(int** T, int N, int M, int K, int y, int x) {
-    for (int i = y; i + K - 1 < N; i++) { 
-        for (int k = 0; k < K; k++) {
-            if (T[i][x] != T[i + k][x]) {
-                return false;
-            }
-        }
-        return true;
-    }
-    return false;
-}
-
-bool checkObliqueAxis(int** T, int N, int M, int K, int y, int x) {
-    for (int i = y, j = x; i + K - 1 < N && j + K - 1< M; i++, j++) {
-        for (int k = 0; k < K; k++) {
-            if (T[i][j] != T[i + k][j + k]) {
-                return false;
-            }
-            cout << T[i + k][j + k];
-        }
-        cout << endl;
-
-        return true;
-    }   
-    for (int i = y, j = x; i + K - 1< N && j - K + 1 >= 0; i++, j--) {
-        for (int k = 0; k < K; k++) {
-            if (T[i][j] != T[i + k][j - k]) {
-                //return false;
-            }
-            cout << T[i + k][j - k];
-        }
-        cout << endl;
-        return true;
-    }      
-    return false;
-}
-
-bool checkWinCond(int** T, int N, int M, int K, int ActivePlayer, int y, int x) {
-    if (T[y][x] == ActivePlayer)
-        return checkHorizontalAxis(T, N, M, K, y, x)
-        || checkVerticalAxis(T, N, M, K, y, x)
-        || checkObliqueAxis(T, N, M, K, y, x);
-    else
-        return false;
 }
