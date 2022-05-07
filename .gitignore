@@ -20,6 +20,7 @@ mono_crash.*
 # Build results
 [Nn]MKSolver.tlog
 [Dd]ebugPublic/
+[Dd]ebug/
 [Rr]elease/
 [Rr]eleases/
 x64/
