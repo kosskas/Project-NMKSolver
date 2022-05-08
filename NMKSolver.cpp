@@ -3,40 +3,41 @@
 
 using namespace std;
 
+typedef unsigned char byte_t;
 #define checkString(a, b) strcmp(a, b) == 0
 #define max(a, b) a > b ? a : b
 #define min(a, b) a < b ? a : b
 #define MAX_CMD_LENGTH 100
 
 enum Position {
-    EMPTY,
-    FIRST_PLAYER,
-    SECOND_PLAYER
+    EMPTY = '0',
+    FIRST_PLAYER = '1',
+    SECOND_PLAYER = '2'
 };
 enum State {
     BOTH_PLAYERS_TIE,
     FIRST_PLAYER_WINS,
     SECOND_PLAYER_WINS,
 };
-int** createMap(int n, int m);
-void freeMemory(int** arr, int n);
-void printMap(int** arr, int n, int m);
-bool checkWinCond(int** T, int N, int M, int K, int ActivePlayer);
-bool checkHorizontalAxis(int** T, int N, int M, int K, int ActivePlayer);
-bool checkVerticalAxis(int** T, int N, int M, int K, int ActivePlayer);
-bool checkVerticalAxis(int** T, int N, int M, int K, int ActivePlayer);
-bool checkDiagonalsAxis(int** T, int N, int M, int K, int ActivePlayer);
-bool checkAntiDiagonalsAxis(int** T, int N, int M, int K, int ActivePlayer);
-void generateAllPositionMoves(int** T, int N, int M, int K, int ActivePlayer);
-int countPosMoves(int** T, int N, int M);
-void generateAllPositionMovesCutIfWin(int** T, int N, int M, int K, int ActivePlayer);
-
+byte_t** createMap(int n, int m);
+void freeMemory(byte_t** arr, int n);
+void printMap(byte_t** arr, int n, int m);
+bool checkWinCond(byte_t** T, int N, int M, int K, char ActivePlayer);
+bool checkHorizontalAxis(byte_t** T, int N, int M, int K, char ActivePlayer);
+bool checkVerticalAxis(byte_t** T, int N, int M, int K, char ActivePlayer);
+bool checkVerticalAxis(byte_t** T, int N, int M, int K, char ActivePlayer);
+bool checkDiagonalsAxis(byte_t** T, int N, int M, int K, char ActivePlayer);
+bool checkAntiDiagonalsAxis(byte_t** T, int N, int M, int K, char ActivePlayer);
+void generateAllPositionMoves(byte_t** T, int N, int M, int K, char ActivePlayer);
+int countPosMoves(byte_t** T, int N, int M);
+void generateAllPositionMovesCutIfWin(byte_t** T, int N, int M, int K, char ActivePlayer);
 int main() {
     ios_base::sync_with_stdio(0);
     cin.tie(0);
     cout.tie(0);
-    int N = 0, M = 0, K, player;
-    int** T = NULL;
+    int N = 0, M = 0, K;
+    byte_t player;
+    byte_t** T = NULL;
     char command[MAX_CMD_LENGTH];
     while (true) {
         cin >> command;
@@ -52,6 +53,7 @@ int main() {
                 }
             } 
             generateAllPositionMoves(T, N, M, K, player);          
+            freeMemory(T, N);
         }
         else if (checkString(command, "GEN_ALL_POS_MOV_CUT_IF_GAME_OVER")) {
             cin >> N >> M >> K >> player;
@@ -61,23 +63,23 @@ int main() {
                     cin >> T[y][x];
                 }
             }
-            generateAllPositionMovesCutIfWin(T, N, M, K, player);           
+            generateAllPositionMovesCutIfWin(T, N, M, K, player);        
+            freeMemory(T, N);
         }
-    }
-    freeMemory(T, N);
+    }  
     return 0;
 }
 
 //minimax pos gleb maxplayer
-int** createMap(int n, int m) {
-    int** arr = new int*[n];
+byte_t** createMap(int n, int m) {
+    byte_t** arr = new byte_t *[n];
     for (int i = 0; i < n; i++) {
-        arr[i] = new int[m];
+        arr[i] = new byte_t[m];
     }
     return arr;
 }
 
-void freeMemory(int** arr, int n) {
+void freeMemory(byte_t** arr, int n) {
     if (arr) {
         for (int i = 0; i < n; i++) {
             if (arr[i]) {
@@ -88,7 +90,7 @@ void freeMemory(int** arr, int n) {
     }
 }
 
-void printMap(int** arr, int n, int m) {
+void printMap(byte_t** arr, int n, int m) {
     for (int y = 0; y < n; y++) {
         for (int x = 0; x < m; x++) {
             cout << arr[y][x] << " ";
@@ -97,14 +99,14 @@ void printMap(int** arr, int n, int m) {
     }
 }
 
-bool checkWinCond(int** T, int N, int M, int K, int ActivePlayer) {
+bool checkWinCond(byte_t** T, int N, int M, int K, char ActivePlayer) {
     return checkHorizontalAxis(T, N, M, K, ActivePlayer)
         || checkVerticalAxis(T, N, M, K, ActivePlayer)
         || checkDiagonalsAxis(T, N, M, K, ActivePlayer)
         || checkAntiDiagonalsAxis(T, N, M, K, ActivePlayer);
 }
 //poziom
-bool checkHorizontalAxis(int** T, int N, int M, int K, int ActivePlayer) {
+bool checkHorizontalAxis(byte_t** T, int N, int M, int K, char ActivePlayer) {
     for (int y = 0; y < N; y++) {
         for (int x = 0; x + K - 1 < M; x++) {
             if (T[y][x] == ActivePlayer) {
@@ -123,7 +125,7 @@ bool checkHorizontalAxis(int** T, int N, int M, int K, int ActivePlayer) {
     return false;
 }
 //pion
-bool checkVerticalAxis(int** T, int N, int M, int K, int ActivePlayer) {
+bool checkVerticalAxis(byte_t** T, int N, int M, int K, char ActivePlayer) {
     for (int y = 0; y + K - 1 < N; y++) {
         for (int x = 0; x < M; x++) {
             if (T[y][x] == ActivePlayer) {
@@ -141,7 +143,7 @@ bool checkVerticalAxis(int** T, int N, int M, int K, int ActivePlayer) {
     return false;
 }
 
-bool checkDiagonalsAxis(int** T, int N, int M, int K, int ActivePlayer) {
+bool checkDiagonalsAxis(byte_t** T, int N, int M, int K, char ActivePlayer) {
     for (int y = 0; y + K - 1 < N; y++) {
         for (int x = 0; x + K - 1 < M; x++) {
             if (T[y][x] == ActivePlayer) {
@@ -159,7 +161,7 @@ bool checkDiagonalsAxis(int** T, int N, int M, int K, int ActivePlayer) {
     return false;
 }
 
-bool checkAntiDiagonalsAxis(int** T, int N, int M, int K, int ActivePlayer) {
+bool checkAntiDiagonalsAxis(byte_t** T, int N, int M, int K, char ActivePlayer) {
     for (int y = 0; y + K - 1 < N; y++) {
         for (int x = M - 1; x - K + 1 >= 0; x--) {
             if (T[y][x] == ActivePlayer) {
@@ -177,7 +179,7 @@ bool checkAntiDiagonalsAxis(int** T, int N, int M, int K, int ActivePlayer) {
     return false;
 }
 
-int countPosMoves(int** T, int N, int M) {
+int countPosMoves(byte_t** T, int N, int M) {
     int pos_moves = 0;
     for (int y = 0; y < N; y++) {
         for (int x = 0; x < M; x++) {
@@ -188,7 +190,7 @@ int countPosMoves(int** T, int N, int M) {
     return pos_moves;
 }
 
-void generateAllPositionMoves(int** T, int N, int M, int K, int ActivePlayer) {
+void generateAllPositionMoves(byte_t** T, int N, int M, int K, char ActivePlayer) {
     if (checkWinCond(T, N, M, K, FIRST_PLAYER) || checkWinCond(T, N, M, K, SECOND_PLAYER)) {
         cout << 0 << endl;
         return;
@@ -206,7 +208,7 @@ void generateAllPositionMoves(int** T, int N, int M, int K, int ActivePlayer) {
     }
 }
 
-void generateAllPositionMovesCutIfWin(int** T, int N, int M, int K, int ActivePlayer) {
+void generateAllPositionMovesCutIfWin(byte_t** T, int N, int M, int K, char ActivePlayer) {
     if (checkWinCond(T, N, M, K, FIRST_PLAYER) || checkWinCond(T, N, M, K, SECOND_PLAYER)) {
         cout << 0 << endl;
         return;
