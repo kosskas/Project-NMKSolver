@@ -8,16 +8,19 @@ typedef unsigned char byte_t;
 #define MAX_CMD_LENGTH 100
 #define max(a, b) a > b ? a : b
 #define min(a, b) a < b ? a : b
+
 enum Position {
     EMPTY = '0',
     FIRST_PLAYER = '1',
     SECOND_PLAYER = '2'
 };
-enum State {
-    BOTH_PLAYERS_TIE = 0,
-    FIRST_PLAYER_WINS = 1,
-    SECOND_PLAYER_WINS = -1,
+
+enum Result {
+    BOTH_PLAYERS_TIE,
+    FIRST_PLAYER_WINS,
+    SECOND_PLAYER_WINS,
 };
+
 byte_t** createMap(int n, int m);
 void freeMemory(byte_t** map, int n);
 void printMap(byte_t** map, int n, int m);
@@ -30,13 +33,13 @@ bool checkAntiDiagonalsAxis(byte_t** map, int N, int M, int K, char ActivePlayer
 void generateAllPositionMoves(byte_t** map, int N, int M, int K, char ActivePlayer);
 int countPosMoves(byte_t** map, int N, int M);
 void generateAllPositionMovesCutIfWin(byte_t** map, int N, int M, int K, char ActivePlayer);
-int minimax(byte_t** map, int N, int M, int K, char ActivePlayer, bool isMaximizing);
 char changePlayer(char ActivePlayer);
+int minimax(byte_t** map, int N, int M, int K, char ActivePlayer, bool isMaximizing, int alfa, int beta);
 int main() {
     ios_base::sync_with_stdio(0);
     cin.tie(0);
     cout.tie(0);
-    int N = 0, M = 0, K;
+    int N = 0, M = 0, K = 0;
     byte_t player;
     byte_t** map = NULL;
     char command[MAX_CMD_LENGTH];
@@ -75,39 +78,28 @@ int main() {
                     cin >> map[y][x];
                 }
             }
-            if (player == FIRST_PLAYER) {
-                int val = minimax(map, N, M, K, FIRST_PLAYER, true);
+            int gameResult;
+            if (player == FIRST_PLAYER)
+                gameResult = minimax(map, N, M, K, FIRST_PLAYER, false, -INT_MAX, INT_MAX);
+            else
+                gameResult = minimax(map, N, M, K, SECOND_PLAYER, true, -INT_MAX, INT_MAX);
 
-                if (val == 1) {
-                    cout << "FIRST_PLAYER_WINS\n";
-                }
-                else if (val == -1) {
-                    cout << "SECOND_PLAYER_WINS\n";
-                }
-                else {
-                    cout << "BOTH_PLAYERS_TIE\n";
-                }
-            }
-            else {
-                int val = minimax(map, N, M, K, SECOND_PLAYER, false);
-
-                if (val == 1) {
-                    cout << "FIRST_PLAYER_WINS\n";
-                }
-                else if (val == -1) {
-                    cout << "SECOND_PLAYER_WINS\n";
-                }
-                else {
-                    cout << "BOTH_PLAYERS_TIE\n";
-                }
+            switch (gameResult) {
+            case FIRST_PLAYER_WINS:
+                cout << "FIRST_PLAYER_WINS\n";
+                break;
+            case SECOND_PLAYER_WINS:
+                cout << "SECOND_PLAYER_WINS\n";
+                break;
+            default:
+                cout << "BOTH_PLAYERS_TIE\n";
+                break;
             }
             freeMemory(map, N);
         }
     }  
     return 0;
 }
-
-//minimax pos gleb maxplayer
 byte_t** createMap(int n, int m) {
     byte_t** map = new byte_t *[n];
     for (int i = 0; i < n; i++) {
@@ -277,55 +269,54 @@ void generateAllPositionMovesCutIfWin(byte_t** map, int N, int M, int K, char Ac
 }
 
 char changePlayer(char ActivePlayer) {
-    if (ActivePlayer == '1')
-        return '2';
+    if (ActivePlayer == FIRST_PLAYER)
+        return SECOND_PLAYER;
     else
-        return '1';
+        return FIRST_PLAYER;
 }
-int minimax(byte_t** map, int N, int M, int K, char ActivePlayer,bool isMaximizing) {
-    
-  //  cout << "Teraz rusza " << (char)ActivePlayer << " czyMAX" << isMaximizing << endl;
-    //cout << "Mapa jaka zastal " << ActivePlayer << endl;
-   // printMap(map, N, M);
-    
-   // cout << endl;
+
+int minimax(byte_t** map, int N, int M, int K, char ActivePlayer, bool isMaximizing, int alfa, int beta) {
     if (checkWinCond(map, N, M, K, FIRST_PLAYER)) {
-       // cout << "zwrocono 1\n";
-        return 1;
+        return FIRST_PLAYER_WINS;
     }
     if (checkWinCond(map, N, M, K, SECOND_PLAYER)) {
-       //cout << "zwrocono -1\n";
-        return -1;
+        return SECOND_PLAYER_WINS;
     }
-    if (countPosMoves(map, N, M) == 0)
-        return 0;
+    if (countPosMoves(map, N, M) == 0) {
+        return BOTH_PLAYERS_TIE;
+    }
 
     if (isMaximizing) {
-       // cout << " szukam max\n";
-        int bestval = -INT_MAX;
+        int optimal = -INT_MAX;
         for (int y = 0; y < N; y++) {
             for (int x = 0; x < M; x++) {
                 if (map[y][x] == EMPTY) {
                     map[y][x] = ActivePlayer;
-                    bestval = max(bestval, minimax(map, N, M, K, changePlayer(ActivePlayer), false));
+                    optimal = max(optimal, minimax(map, N, M, K, changePlayer(ActivePlayer), false, alfa, beta));
                     map[y][x] = EMPTY;
+                    
+                    alfa = max(alfa, optimal);
+                    if (alfa >= beta)
+                        break;
                 }
             }           
         }
-        return bestval;
+        return optimal;
     }
     else {
-      //  cout << " szukam min\n";
-        int bestval = INT_MAX;
+        int optimal = INT_MAX;
         for (int y = 0; y < N; y++) {
             for (int x = 0; x < M; x++) {
                 if (map[y][x] == EMPTY) {
                     map[y][x] = ActivePlayer;
-                    bestval = min(bestval, minimax(map, N, M, K, changePlayer(ActivePlayer), true));
+                    optimal = min(optimal, minimax(map, N, M, K, changePlayer(ActivePlayer), true, alfa, beta));
                     map[y][x] = EMPTY;
+                    beta = max(beta, optimal);
+                    if (alfa >= beta)
+                        break;
                 }
             }
         }
-        return bestval;
+        return optimal;
     }
 }
