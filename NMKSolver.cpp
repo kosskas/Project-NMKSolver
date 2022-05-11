@@ -4,6 +4,7 @@
 using namespace std;
 
 typedef unsigned char byte_t;
+
 #define checkString(a, b) strcmp(a, b) == 0
 #define MAX_CMD_LENGTH 100
 #define max(a, b) a > b ? a : b
@@ -16,26 +17,33 @@ enum Position {
 };
 
 enum Result {
-    BOTH_PLAYERS_TIE,
-    FIRST_PLAYER_WINS,
-    SECOND_PLAYER_WINS,
+    LOSE = -1,
+    TIE = 0,
+    WIN = 1,
 };
 
 byte_t** createMap(int n, int m);
 void freeMemory(byte_t** map, int n);
 void printMap(byte_t** map, int n, int m);
-bool checkWinCond(byte_t** map, int N, int M, int K, char ActivePlayer);
-bool checkHorizontalAxis(byte_t** map, int N, int M, int K, char ActivePlayer);
-bool checkVerticalAxis(byte_t** map, int N, int M, int K, char ActivePlayer);
-bool checkVerticalAxis(byte_t** map, int N, int M, int K, char ActivePlayer);
-bool checkDiagonalsAxis(byte_t** map, int N, int M, int K, char ActivePlayer);
-bool checkAntiDiagonalsAxis(byte_t** map, int N, int M, int K, char ActivePlayer);
-void generateAllPositionMoves(byte_t** map, int N, int M, int K, char ActivePlayer);
+bool checkWinCond(byte_t** map, int N, int M, int K, byte_t ActivePlayer);
+bool checkHorizontalAxis(byte_t** map, int N, int M, int K, byte_t ActivePlayer);
+bool checkVerticalAxis(byte_t** map, int N, int M, int K, byte_t ActivePlayer);
+bool checkVerticalAxis(byte_t** map, int N, int M, int K, byte_t ActivePlayer);
+bool checkDiagonalsAxis(byte_t** map, int N, int M, int K, byte_t ActivePlayer);
+bool checkAntiDiagonalsAxis(byte_t** map, int N, int M, int K, byte_t ActivePlayer);
+void generateAllPositionMoves(byte_t** map, int N, int M, int K, byte_t ActivePlayer);
 int countPosMoves(byte_t** map, int N, int M);
-void generateAllPositionMovesCutIfWin(byte_t** map, int N, int M, int K, char ActivePlayer);
-char changePlayer(char ActivePlayer);
-int minimax(byte_t** map, int N, int M, int K, char ActivePlayer, bool isMaximizing, int alfa, int beta);
+void generateAllPositionMovesCutIfWin(byte_t** map, int N, int M, int K, byte_t ActivePlayer);
+byte_t changePlayer(byte_t ActivePlayer);
+void solveGame(byte_t** map, int N, int M, int K, byte_t player);
+//int minimax(byte_t** map, int N, int M, int K, byte_t player, byte_t enemy, bool isMaximizing);
+int minimax(byte_t** map, int N, int M, int K, byte_t player, byte_t enemy, bool isMaximizing ,int alpha, int beta);
+
 int main() {
+    /// <summary>
+    /// wincond do optymalizacji!!!!!!!
+    /// </summary>
+    /// <returns></returns>
     ios_base::sync_with_stdio(0);
     cin.tie(0);
     cout.tie(0);
@@ -55,7 +63,7 @@ int main() {
                 for (int x = 0; x < M; x++) {
                     cin >> map[y][x];
                 }
-            } 
+            }
             generateAllPositionMoves(map, N, M, K, player);
             freeMemory(map, N);
         }
@@ -78,30 +86,15 @@ int main() {
                     cin >> map[y][x];
                 }
             }
-            int gameResult;
-            if (player == FIRST_PLAYER)
-                gameResult = minimax(map, N, M, K, FIRST_PLAYER, false, -INT_MAX, INT_MAX);
-            else
-                gameResult = minimax(map, N, M, K, SECOND_PLAYER, true, -INT_MAX, INT_MAX);
-
-            switch (gameResult) {
-            case FIRST_PLAYER_WINS:
-                cout << "FIRST_PLAYER_WINS\n";
-                break;
-            case SECOND_PLAYER_WINS:
-                cout << "SECOND_PLAYER_WINS\n";
-                break;
-            default:
-                cout << "BOTH_PLAYERS_TIE\n";
-                break;
-            }
+            solveGame(map, N, M, K, player);
             freeMemory(map, N);
         }
-    }  
+    }
     return 0;
 }
+
 byte_t** createMap(int n, int m) {
-    byte_t** map = new byte_t *[n];
+    byte_t** map = new byte_t * [n];
     for (int i = 0; i < n; i++) {
         map[i] = new byte_t[m];
     }
@@ -128,14 +121,14 @@ void printMap(byte_t** map, int n, int m) {
     }
 }
 
-bool checkWinCond(byte_t** map, int N, int M, int K, char ActivePlayer) {
+bool checkWinCond(byte_t** map, int N, int M, int K, byte_t ActivePlayer) {
     return checkHorizontalAxis(map, N, M, K, ActivePlayer)
         || checkVerticalAxis(map, N, M, K, ActivePlayer)
         || checkDiagonalsAxis(map, N, M, K, ActivePlayer)
         || checkAntiDiagonalsAxis(map, N, M, K, ActivePlayer);
 }
 //poziom
-bool checkHorizontalAxis(byte_t** map, int N, int M, int K, char ActivePlayer) {
+bool checkHorizontalAxis(byte_t** map, int N, int M, int K, byte_t ActivePlayer) {
     for (int y = 0; y < N; y++) {
         for (int x = 0; x + K - 1 < M; x++) {
             if (map[y][x] == ActivePlayer) {
@@ -144,9 +137,9 @@ bool checkHorizontalAxis(byte_t** map, int N, int M, int K, char ActivePlayer) {
                     if (map[y][x] != map[y][x + k]) {
                         break;
                     }
-                    
+
                 }
-                if(k == K)
+                if (k == K)
                     return true;
             }
         }
@@ -154,7 +147,7 @@ bool checkHorizontalAxis(byte_t** map, int N, int M, int K, char ActivePlayer) {
     return false;
 }
 //pion
-bool checkVerticalAxis(byte_t** map, int N, int M, int K, char ActivePlayer) {
+bool checkVerticalAxis(byte_t** map, int N, int M, int K, byte_t ActivePlayer) {
     for (int y = 0; y + K - 1 < N; y++) {
         for (int x = 0; x < M; x++) {
             if (map[y][x] == ActivePlayer) {
@@ -164,7 +157,7 @@ bool checkVerticalAxis(byte_t** map, int N, int M, int K, char ActivePlayer) {
                         break;
                     }
                 }
-                if(k == K)
+                if (k == K)
                     return true;
             }
         }
@@ -172,7 +165,7 @@ bool checkVerticalAxis(byte_t** map, int N, int M, int K, char ActivePlayer) {
     return false;
 }
 
-bool checkDiagonalsAxis(byte_t** map, int N, int M, int K, char ActivePlayer) {
+bool checkDiagonalsAxis(byte_t** map, int N, int M, int K, byte_t ActivePlayer) {
     for (int y = 0; y + K - 1 < N; y++) {
         for (int x = 0; x + K - 1 < M; x++) {
             if (map[y][x] == ActivePlayer) {
@@ -182,7 +175,7 @@ bool checkDiagonalsAxis(byte_t** map, int N, int M, int K, char ActivePlayer) {
                         break;
                     }
                 }
-                if(k == K)
+                if (k == K)
                     return true;
             }
         }
@@ -190,7 +183,7 @@ bool checkDiagonalsAxis(byte_t** map, int N, int M, int K, char ActivePlayer) {
     return false;
 }
 
-bool checkAntiDiagonalsAxis(byte_t** map, int N, int M, int K, char ActivePlayer) {
+bool checkAntiDiagonalsAxis(byte_t** map, int N, int M, int K, byte_t ActivePlayer) {
     for (int y = 0; y + K - 1 < N; y++) {
         for (int x = M - 1; x - K + 1 >= 0; x--) {
             if (map[y][x] == ActivePlayer) {
@@ -200,7 +193,7 @@ bool checkAntiDiagonalsAxis(byte_t** map, int N, int M, int K, char ActivePlayer
                         break;
                     }
                 }
-                if(k == K)
+                if (k == K)
                     return true;
             }
         }
@@ -219,7 +212,7 @@ int countPosMoves(byte_t** map, int N, int M) {
     return pos_moves;
 }
 
-void generateAllPositionMoves(byte_t** map, int N, int M, int K, char ActivePlayer) {
+void generateAllPositionMoves(byte_t** map, int N, int M, int K, byte_t ActivePlayer) {
     if (checkWinCond(map, N, M, K, FIRST_PLAYER) || checkWinCond(map, N, M, K, SECOND_PLAYER)) {
         cout << 0 << endl;
         return;
@@ -237,7 +230,7 @@ void generateAllPositionMoves(byte_t** map, int N, int M, int K, char ActivePlay
     }
 }
 
-void generateAllPositionMovesCutIfWin(byte_t** map, int N, int M, int K, char ActivePlayer) {
+void generateAllPositionMovesCutIfWin(byte_t** map, int N, int M, int K, byte_t ActivePlayer) {
     if (checkWinCond(map, N, M, K, FIRST_PLAYER) || checkWinCond(map, N, M, K, SECOND_PLAYER)) {
         cout << 0 << endl;
         return;
@@ -247,7 +240,7 @@ void generateAllPositionMovesCutIfWin(byte_t** map, int N, int M, int K, char Ac
             if (map[y][x] == EMPTY) {
                 map[y][x] = ActivePlayer;
                 if (checkWinCond(map, N, M, K, ActivePlayer)) {
-                    cout << 1<<endl;
+                    cout << 1 << endl;
                     printMap(map, N, M);
                     return;
                 }
@@ -268,39 +261,55 @@ void generateAllPositionMovesCutIfWin(byte_t** map, int N, int M, int K, char Ac
     }
 }
 
-char changePlayer(char ActivePlayer) {
+byte_t changePlayer(byte_t ActivePlayer) {
     if (ActivePlayer == FIRST_PLAYER)
         return SECOND_PLAYER;
     else
         return FIRST_PLAYER;
 }
 
-int minimax(byte_t** map, int N, int M, int K, char ActivePlayer, bool isMaximizing, int alfa, int beta) {
-    if (checkWinCond(map, N, M, K, FIRST_PLAYER)) {
-        return FIRST_PLAYER_WINS;
+void solveGame(byte_t** map, int N, int M, int K, byte_t player) {
+    int gameresult = minimax(map, N, M, K, player, changePlayer(player), true, INT_MIN, INT_MAX);
+    if (gameresult == WIN) {
+        if (player == FIRST_PLAYER)
+            cout << "FIRST_PLAYER_WINS\n";
+        else
+            cout << "SECOND_PLAYER_WINS\n";
     }
-    if (checkWinCond(map, N, M, K, SECOND_PLAYER)) {
-        return SECOND_PLAYER_WINS;
+    else if (gameresult == LOSE) {
+        if (player == FIRST_PLAYER)
+            cout << "SECOND_PLAYER_WINS\n";
+        else
+            cout << "FIRST_PLAYER_WINS\n";
+    }
+    else
+        cout << "BOTH_PLAYERS_TIE\n";
+}
+int minimax(byte_t** map, int N, int M, int K, byte_t player, byte_t enemy, bool isMaximizing, int alpha, int beta) {
+    if (checkWinCond(map, N, M, K, player)) {
+        return WIN;
+    }
+    if (checkWinCond(map, N, M, K, enemy)) {
+        return LOSE;
     }
     if (countPosMoves(map, N, M) == 0) {
-        return BOTH_PLAYERS_TIE;
+        return TIE;
     }
 
     if (isMaximizing) {
-        int optimal = -INT_MAX;
+        int optimal = INT_MIN;
         for (int y = 0; y < N; y++) {
             for (int x = 0; x < M; x++) {
                 if (map[y][x] == EMPTY) {
-                    map[y][x] = ActivePlayer;
-                    optimal = max(optimal, minimax(map, N, M, K, changePlayer(ActivePlayer), false, alfa, beta));
+                    map[y][x] = player;
+                    optimal = max(optimal, minimax(map, N, M, K, player, enemy, false, alpha, beta));                   
                     map[y][x] = EMPTY;
-                    
-                    alfa = max(alfa, optimal);
-                    if (alfa >= beta)
-                        break;
+                    alpha = max(alpha, optimal);
+                    if (alpha >= beta)
+                        return alpha;
                 }
-            }           
-        }
+            }
+      }
         return optimal;
     }
     else {
@@ -308,15 +317,55 @@ int minimax(byte_t** map, int N, int M, int K, char ActivePlayer, bool isMaximiz
         for (int y = 0; y < N; y++) {
             for (int x = 0; x < M; x++) {
                 if (map[y][x] == EMPTY) {
-                    map[y][x] = ActivePlayer;
-                    optimal = min(optimal, minimax(map, N, M, K, changePlayer(ActivePlayer), true, alfa, beta));
+                    map[y][x] = enemy;
+                    optimal = min(optimal, minimax(map, N, M, K, player, enemy, true, alpha, beta));
                     map[y][x] = EMPTY;
                     beta = max(beta, optimal);
-                    if (alfa >= beta)
-                        break;
+                    if (alpha >= beta)
+                        return beta;
                 }
             }
         }
         return optimal;
     }
 }
+/*
+int minimax(byte_t** map, int N, int M, int K, byte_t player, byte_t enemy, bool isMaximizing) {
+    if (checkWinCond(map, N, M, K, player)) {
+        return WIN;
+    }
+    if (checkWinCond(map, N, M, K, enemy)) {
+        return LOSE;
+    }
+    if (countPosMoves(map, N, M) == 0) {
+        return TIE;
+    }
+
+    if (isMaximizing) {
+        int optimal = INT_MIN;
+        for (int y = 0; y < N; y++) {
+            for (int x = 0; x < M; x++) {
+                if (map[y][x] == EMPTY) {
+                    map[y][x] = player;
+                    optimal = max(optimal, minimax(map, N, M, K, player, enemy,!isMaximizing));
+                    map[y][x] = EMPTY;
+                }
+            }
+      }
+        return optimal;
+    }
+    else {
+        int optimal = INT_MAX;
+        for (int y = 0; y < N; y++) {
+            for (int x = 0; x < M; x++) {
+                if (map[y][x] == EMPTY) {
+                    map[y][x] = enemy;
+                    optimal = min(optimal, minimax(map, N, M, K, player, enemy, !isMaximizing));
+                    map[y][x] = EMPTY;
+                }
+            }
+        }
+        return optimal;
+    }
+}
+*/
