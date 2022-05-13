@@ -5,7 +5,7 @@ using namespace std;
 
 typedef unsigned char byte_t;
 
-#define checkString(a, b) strcmp(a, b) == 0
+#define checkString(a, b) (strcmp(a, b) == 0)
 #define MAX_CMD_LENGTH 100
 #define max(a, b) a > b ? a : b
 #define min(a, b) a < b ? a : b
@@ -36,14 +36,10 @@ int countPosMoves(byte_t** map, int N, int M);
 void generateAllPositionMovesCutIfWin(byte_t** map, int N, int M, int K, byte_t ActivePlayer);
 byte_t changePlayer(byte_t ActivePlayer);
 void solveGame(byte_t** map, int N, int M, int K, byte_t player);
-//int minimax(byte_t** map, int N, int M, int K, byte_t player, byte_t enemy, bool isMaximizing);
-int minimax(byte_t** map, int N, int M, int K, byte_t player, byte_t enemy, bool isMaximizing ,int alpha, int beta);
+//Based on https://en.wikipedia.org/wiki/Minimax
+int minimax(byte_t** map, int N, int M, int K, byte_t player, byte_t enemy, bool isMaximizing, int alpha, int beta);
 
 int main() {
-    /// <summary>
-    /// wincond do optymalizacji!!!!!!!
-    /// </summary>
-    /// <returns></returns>
     ios_base::sync_with_stdio(0);
     cin.tie(0);
     cout.tie(0);
@@ -285,6 +281,7 @@ void solveGame(byte_t** map, int N, int M, int K, byte_t player) {
     else
         cout << "BOTH_PLAYERS_TIE\n";
 }
+
 int minimax(byte_t** map, int N, int M, int K, byte_t player, byte_t enemy, bool isMaximizing, int alpha, int beta) {
     if (checkWinCond(map, N, M, K, player)) {
         return WIN;
@@ -295,21 +292,21 @@ int minimax(byte_t** map, int N, int M, int K, byte_t player, byte_t enemy, bool
     if (countPosMoves(map, N, M) == 0) {
         return TIE;
     }
-
     if (isMaximizing) {
         int optimal = INT_MIN;
         for (int y = 0; y < N; y++) {
             for (int x = 0; x < M; x++) {
                 if (map[y][x] == EMPTY) {
                     map[y][x] = player;
-                    optimal = max(optimal, minimax(map, N, M, K, player, enemy, false, alpha, beta));                   
+                    int move = minimax(map, N, M, K, player, enemy, false, alpha, beta);
+                    optimal = max(optimal, move);
                     map[y][x] = EMPTY;
                     alpha = max(alpha, optimal);
                     if (alpha >= beta)
                         return alpha;
                 }
             }
-      }
+        }
         return optimal;
     }
     else {
@@ -318,7 +315,8 @@ int minimax(byte_t** map, int N, int M, int K, byte_t player, byte_t enemy, bool
             for (int x = 0; x < M; x++) {
                 if (map[y][x] == EMPTY) {
                     map[y][x] = enemy;
-                    optimal = min(optimal, minimax(map, N, M, K, player, enemy, true, alpha, beta));
+                    int move = minimax(map, N, M, K, player, enemy, true, alpha, beta);
+                    optimal = min(optimal, move);
                     map[y][x] = EMPTY;
                     beta = max(beta, optimal);
                     if (alpha >= beta)
@@ -329,43 +327,3 @@ int minimax(byte_t** map, int N, int M, int K, byte_t player, byte_t enemy, bool
         return optimal;
     }
 }
-/*
-int minimax(byte_t** map, int N, int M, int K, byte_t player, byte_t enemy, bool isMaximizing) {
-    if (checkWinCond(map, N, M, K, player)) {
-        return WIN;
-    }
-    if (checkWinCond(map, N, M, K, enemy)) {
-        return LOSE;
-    }
-    if (countPosMoves(map, N, M) == 0) {
-        return TIE;
-    }
-
-    if (isMaximizing) {
-        int optimal = INT_MIN;
-        for (int y = 0; y < N; y++) {
-            for (int x = 0; x < M; x++) {
-                if (map[y][x] == EMPTY) {
-                    map[y][x] = player;
-                    optimal = max(optimal, minimax(map, N, M, K, player, enemy,!isMaximizing));
-                    map[y][x] = EMPTY;
-                }
-            }
-      }
-        return optimal;
-    }
-    else {
-        int optimal = INT_MAX;
-        for (int y = 0; y < N; y++) {
-            for (int x = 0; x < M; x++) {
-                if (map[y][x] == EMPTY) {
-                    map[y][x] = enemy;
-                    optimal = min(optimal, minimax(map, N, M, K, player, enemy, !isMaximizing));
-                    map[y][x] = EMPTY;
-                }
-            }
-        }
-        return optimal;
-    }
-}
-*/
