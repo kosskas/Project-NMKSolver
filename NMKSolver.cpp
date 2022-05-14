@@ -36,7 +36,7 @@ int countPosMoves(byte_t** map, int N, int M);
 void generateAllPositionMovesCutIfWin(byte_t** map, int N, int M, int K, byte_t ActivePlayer);
 byte_t changePlayer(byte_t ActivePlayer);
 void solveGame(byte_t** map, int N, int M, int K, byte_t player);
-//Based on https://en.wikipedia.org/wiki/Minimax
+//Based on https://en.wikipedia.org/wiki/Minimax and https://www.geeksforgeeks.org/minimax-algorithm-in-game-theory-set-1-introduction/
 int minimax(byte_t** map, int N, int M, int K, byte_t player, byte_t enemy, bool isMaximizing, int alpha, int beta);
 
 int main() {
@@ -52,7 +52,7 @@ int main() {
         if (feof(stdin) != 0) {
             break;
         }
-        else if (checkString(command, "GEN_ALL_POS_MOV")) {
+        if (checkString(command, "GEN_ALL_POS_MOV")) {
             cin >> N >> M >> K >> player;
             map = createMap(N, M);
             for (int y = 0; y < N; y++) {
@@ -318,7 +318,7 @@ int minimax(byte_t** map, int N, int M, int K, byte_t player, byte_t enemy, bool
                     int move = minimax(map, N, M, K, player, enemy, true, alpha, beta);
                     optimal = min(optimal, move);
                     map[y][x] = EMPTY;
-                    beta = max(beta, optimal);
+                    beta = min(beta, optimal);
                     if (alpha >= beta)
                         return beta;
                 }
