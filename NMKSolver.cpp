@@ -113,7 +113,7 @@ void printMap(byte_t** map, int n, int m) {
         for (int x = 0; x < m; x++) {
             cout << map[y][x] << " ";
         }
-        cout << endl;
+        cout << '\n';
     }
 }
 
@@ -210,11 +210,11 @@ int countPosMoves(byte_t** map, int N, int M) {
 
 void generateAllPositionMoves(byte_t** map, int N, int M, int K, byte_t ActivePlayer) {
     if (checkWinCond(map, N, M, K, FIRST_PLAYER) || checkWinCond(map, N, M, K, SECOND_PLAYER)) {
-        cout << 0 << endl;
+        cout << 0 << '\n';
         return;
     }
     int pos_moves = countPosMoves(map, N, M);
-    cout << pos_moves << endl;
+    cout << pos_moves << '\n';
     for (int y = 0; y < N; y++) {
         for (int x = 0; x < M; x++) {
             if (map[y][x] == EMPTY) {
@@ -228,7 +228,7 @@ void generateAllPositionMoves(byte_t** map, int N, int M, int K, byte_t ActivePl
 
 void generateAllPositionMovesCutIfWin(byte_t** map, int N, int M, int K, byte_t ActivePlayer) {
     if (checkWinCond(map, N, M, K, FIRST_PLAYER) || checkWinCond(map, N, M, K, SECOND_PLAYER)) {
-        cout << 0 << endl;
+        cout << 0 << '\n';
         return;
     }
     for (int y = 0; y < N; y++) {
@@ -236,7 +236,7 @@ void generateAllPositionMovesCutIfWin(byte_t** map, int N, int M, int K, byte_t 
             if (map[y][x] == EMPTY) {
                 map[y][x] = ActivePlayer;
                 if (checkWinCond(map, N, M, K, ActivePlayer)) {
-                    cout << 1 << endl;
+                    cout << 1 << '\n';
                     printMap(map, N, M);
                     return;
                 }
@@ -245,7 +245,7 @@ void generateAllPositionMovesCutIfWin(byte_t** map, int N, int M, int K, byte_t 
         }
     }
     int pos_moves = countPosMoves(map, N, M);
-    cout << pos_moves << endl;
+    cout << pos_moves << '\n';
     for (int y = 0; y < N; y++) {
         for (int x = 0; x < M; x++) {
             if (map[y][x] == EMPTY) {
