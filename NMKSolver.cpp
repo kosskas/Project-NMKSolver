@@ -1,14 +1,12 @@
-﻿#include <iostream>
+﻿#define _CRT_SECURE_NO_WARNINGS
+#include <iostream>
 #include <string.h>
-
-using namespace std;
-
-typedef unsigned char byte_t;
+#include <cstdio>
 
 #define checkString(a, b) (strcmp(a, b) == 0)
 #define MAX_CMD_LENGTH 100
-#define max(a, b) a > b ? a : b
-#define min(a, b) a < b ? a : b
+#define max(a, b) (a > b ? a : b)
+#define min(a, b) (a < b ? a : b)
 
 enum Position {
     EMPTY = '0',
@@ -22,64 +20,59 @@ enum Result {
     WIN = 1,
 };
 
-byte_t** createMap(int n, int m);
-void freeMemory(byte_t** map, int n);
-void printMap(byte_t** map, int n, int m);
-bool checkWinCond(byte_t** map, int N, int M, int K, byte_t ActivePlayer);
-bool checkHorizontalAxis(byte_t** map, int N, int M, int K, byte_t ActivePlayer);
-bool checkVerticalAxis(byte_t** map, int N, int M, int K, byte_t ActivePlayer);
-bool checkVerticalAxis(byte_t** map, int N, int M, int K, byte_t ActivePlayer);
-bool checkDiagonalsAxis(byte_t** map, int N, int M, int K, byte_t ActivePlayer);
-bool checkAntiDiagonalsAxis(byte_t** map, int N, int M, int K, byte_t ActivePlayer);
-void generateAllPositionMoves(byte_t** map, int N, int M, int K, byte_t ActivePlayer);
-int countPosMoves(byte_t** map, int N, int M);
-void generateAllPositionMovesCutIfWin(byte_t** map, int N, int M, int K, byte_t ActivePlayer);
-byte_t changePlayer(byte_t ActivePlayer);
-void solveGame(byte_t** map, int N, int M, int K, byte_t player);
-//Based on https://en.wikipedia.org/wiki/Minimax and https://www.geeksforgeeks.org/minimax-algorithm-in-game-theory-set-1-introduction/
-int minimax(byte_t** map, int N, int M, int K, byte_t player, byte_t enemy, bool isMaximizing, int alpha, int beta);
+char** createMap(int n, int m);
+void freeMemory(char** map, int n);
+void printMap(char** map, int n, int m);
+bool checkWinCond(char** map, int N, int M, int K, char ActivePlayer);
+bool checkHorizontalAxis(char** map, int N, int M, int K, char ActivePlayer);
+bool checkVerticalAxis(char** map, int N, int M, int K, char ActivePlayer);
+bool checkVerticalAxis(char** map, int N, int M, int K, char ActivePlayer);
+bool checkDiagonalsAxis(char** map, int N, int M, int K, char ActivePlayer);
+bool checkAntiDiagonalsAxis(char** map, int N, int M, int K, char ActivePlayer);
+void generateAllPositionMoves(char** map, int N, int M, int K, char ActivePlayer);
+int countPosMoves(char** map, int N, int M);
+void generateAllPositionMovesCutIfWin(char** map, int N, int M, int K, char ActivePlayer);
+char changePlayer(char ActivePlayer);
+void solveGame(char** map, int N, int M, int K, char player);
+//Based on https://www.geeksforgeeks.org/minimax-algorithm-in-game-theory-set-1-introduction/
+//and P.Wroblewski Algorytmy, struktury danych i techniki programowania
+int minimax(char** map, int N, int M, int K, char player, char enemy, bool isMaximizing, int alpha, int beta);
 
 int main() {
-    ios_base::sync_with_stdio(0);
-    cin.tie(0);
-    cout.tie(0);
     int N = 0, M = 0, K = 0;
-    byte_t player;
-    byte_t** map = NULL;
+    char player = FIRST_PLAYER;
+    char** map = NULL;
     char command[MAX_CMD_LENGTH];
     while (true) {
-        cin >> command;
+        scanf("%s %d %d %d %c\n", command, &N, &M, &K, &player);
         if (feof(stdin) != 0) {
             break;
         }
         if (checkString(command, "GEN_ALL_POS_MOV")) {
-            cin >> N >> M >> K >> player;
             map = createMap(N, M);
             for (int y = 0; y < N; y++) {
                 for (int x = 0; x < M; x++) {
-                    cin >> map[y][x];
+                    scanf("%c ", &map[y][x]);
                 }
             }
             generateAllPositionMoves(map, N, M, K, player);
             freeMemory(map, N);
         }
         else if (checkString(command, "GEN_ALL_POS_MOV_CUT_IF_GAME_OVER")) {
-            cin >> N >> M >> K >> player;
             map = createMap(N, M);
             for (int y = 0; y < N; y++) {
                 for (int x = 0; x < M; x++) {
-                    cin >> map[y][x];
+                    scanf("%c ", &map[y][x]);
                 }
             }
             generateAllPositionMovesCutIfWin(map, N, M, K, player);
             freeMemory(map, N);
         }
         else if (checkString(command, "SOLVE_GAME_STATE")) {
-            cin >> N >> M >> K >> player;
             map = createMap(N, M);
             for (int y = 0; y < N; y++) {
                 for (int x = 0; x < M; x++) {
-                    cin >> map[y][x];
+                    scanf("%c ", &map[y][x]);
                 }
             }
             solveGame(map, N, M, K, player);
@@ -89,15 +82,15 @@ int main() {
     return 0;
 }
 
-byte_t** createMap(int n, int m) {
-    byte_t** map = new byte_t * [n];
+char** createMap(int n, int m) {
+    char** map = new char * [n];
     for (int i = 0; i < n; i++) {
-        map[i] = new byte_t[m];
+        map[i] = new char[m];
     }
     return map;
 }
 
-void freeMemory(byte_t** map, int n) {
+void freeMemory(char** map, int n) {
     if (map) {
         for (int i = 0; i < n; i++) {
             if (map[i]) {
@@ -108,23 +101,23 @@ void freeMemory(byte_t** map, int n) {
     }
 }
 
-void printMap(byte_t** map, int n, int m) {
+void printMap(char** map, int n, int m) {
     for (int y = 0; y < n; y++) {
         for (int x = 0; x < m; x++) {
-            cout << map[y][x] << " ";
+            printf("%c ", map[y][x]);
         }
-        cout << '\n';
+        printf("\n");
     }
 }
 
-bool checkWinCond(byte_t** map, int N, int M, int K, byte_t ActivePlayer) {
+bool checkWinCond(char** map, int N, int M, int K, char ActivePlayer) {
     return checkHorizontalAxis(map, N, M, K, ActivePlayer)
         || checkVerticalAxis(map, N, M, K, ActivePlayer)
         || checkDiagonalsAxis(map, N, M, K, ActivePlayer)
         || checkAntiDiagonalsAxis(map, N, M, K, ActivePlayer);
 }
 //poziom
-bool checkHorizontalAxis(byte_t** map, int N, int M, int K, byte_t ActivePlayer) {
+bool checkHorizontalAxis(char** map, int N, int M, int K, char ActivePlayer) {
     for (int y = 0; y < N; y++) {
         for (int x = 0; x + K - 1 < M; x++) {
             if (map[y][x] == ActivePlayer) {
@@ -143,7 +136,7 @@ bool checkHorizontalAxis(byte_t** map, int N, int M, int K, byte_t ActivePlayer)
     return false;
 }
 //pion
-bool checkVerticalAxis(byte_t** map, int N, int M, int K, byte_t ActivePlayer) {
+bool checkVerticalAxis(char** map, int N, int M, int K, char ActivePlayer) {
     for (int y = 0; y + K - 1 < N; y++) {
         for (int x = 0; x < M; x++) {
             if (map[y][x] == ActivePlayer) {
@@ -161,7 +154,7 @@ bool checkVerticalAxis(byte_t** map, int N, int M, int K, byte_t ActivePlayer) {
     return false;
 }
 
-bool checkDiagonalsAxis(byte_t** map, int N, int M, int K, byte_t ActivePlayer) {
+bool checkDiagonalsAxis(char** map, int N, int M, int K, char ActivePlayer) {
     for (int y = 0; y + K - 1 < N; y++) {
         for (int x = 0; x + K - 1 < M; x++) {
             if (map[y][x] == ActivePlayer) {
@@ -179,7 +172,7 @@ bool checkDiagonalsAxis(byte_t** map, int N, int M, int K, byte_t ActivePlayer) 
     return false;
 }
 
-bool checkAntiDiagonalsAxis(byte_t** map, int N, int M, int K, byte_t ActivePlayer) {
+bool checkAntiDiagonalsAxis(char** map, int N, int M, int K, char ActivePlayer) {
     for (int y = 0; y + K - 1 < N; y++) {
         for (int x = M - 1; x - K + 1 >= 0; x--) {
             if (map[y][x] == ActivePlayer) {
@@ -197,7 +190,7 @@ bool checkAntiDiagonalsAxis(byte_t** map, int N, int M, int K, byte_t ActivePlay
     return false;
 }
 
-int countPosMoves(byte_t** map, int N, int M) {
+int countPosMoves(char** map, int N, int M) {
     int pos_moves = 0;
     for (int y = 0; y < N; y++) {
         for (int x = 0; x < M; x++) {
@@ -208,13 +201,13 @@ int countPosMoves(byte_t** map, int N, int M) {
     return pos_moves;
 }
 
-void generateAllPositionMoves(byte_t** map, int N, int M, int K, byte_t ActivePlayer) {
+void generateAllPositionMoves(char** map, int N, int M, int K, char ActivePlayer) {
     if (checkWinCond(map, N, M, K, FIRST_PLAYER) || checkWinCond(map, N, M, K, SECOND_PLAYER)) {
-        cout << 0 << '\n';
+        printf("0\n");
         return;
     }
     int pos_moves = countPosMoves(map, N, M);
-    cout << pos_moves << '\n';
+    printf("%d\n", pos_moves);
     for (int y = 0; y < N; y++) {
         for (int x = 0; x < M; x++) {
             if (map[y][x] == EMPTY) {
@@ -226,9 +219,9 @@ void generateAllPositionMoves(byte_t** map, int N, int M, int K, byte_t ActivePl
     }
 }
 
-void generateAllPositionMovesCutIfWin(byte_t** map, int N, int M, int K, byte_t ActivePlayer) {
+void generateAllPositionMovesCutIfWin(char** map, int N, int M, int K, char ActivePlayer) {
     if (checkWinCond(map, N, M, K, FIRST_PLAYER) || checkWinCond(map, N, M, K, SECOND_PLAYER)) {
-        cout << 0 << '\n';
+        printf("0\n");
         return;
     }
     for (int y = 0; y < N; y++) {
@@ -236,7 +229,7 @@ void generateAllPositionMovesCutIfWin(byte_t** map, int N, int M, int K, byte_t 
             if (map[y][x] == EMPTY) {
                 map[y][x] = ActivePlayer;
                 if (checkWinCond(map, N, M, K, ActivePlayer)) {
-                    cout << 1 << '\n';
+                    printf("1\n");
                     printMap(map, N, M);
                     return;
                 }
@@ -245,7 +238,7 @@ void generateAllPositionMovesCutIfWin(byte_t** map, int N, int M, int K, byte_t 
         }
     }
     int pos_moves = countPosMoves(map, N, M);
-    cout << pos_moves << '\n';
+    printf("%d\n", pos_moves);
     for (int y = 0; y < N; y++) {
         for (int x = 0; x < M; x++) {
             if (map[y][x] == EMPTY) {
@@ -257,32 +250,32 @@ void generateAllPositionMovesCutIfWin(byte_t** map, int N, int M, int K, byte_t 
     }
 }
 
-byte_t changePlayer(byte_t ActivePlayer) {
+char changePlayer(char ActivePlayer) {
     if (ActivePlayer == FIRST_PLAYER)
         return SECOND_PLAYER;
     else
         return FIRST_PLAYER;
 }
 
-void solveGame(byte_t** map, int N, int M, int K, byte_t player) {
+void solveGame(char** map, int N, int M, int K, char player) {
     int gameresult = minimax(map, N, M, K, player, changePlayer(player), true, INT_MIN, INT_MAX);
     if (gameresult == WIN) {
         if (player == FIRST_PLAYER)
-            cout << "FIRST_PLAYER_WINS\n";
+            printf("FIRST_PLAYER_WINS\n");
         else
-            cout << "SECOND_PLAYER_WINS\n";
+            printf("SECOND_PLAYER_WINS\n");
     }
     else if (gameresult == LOSE) {
         if (player == FIRST_PLAYER)
-            cout << "SECOND_PLAYER_WINS\n";
+            printf("SECOND_PLAYER_WINS\n");
         else
-            cout << "FIRST_PLAYER_WINS\n";
+            printf("FIRST_PLAYER_WINS\n");
     }
     else
-        cout << "BOTH_PLAYERS_TIE\n";
+        printf("BOTH_PLAYERS_TIE\n");
 }
 
-int minimax(byte_t** map, int N, int M, int K, byte_t player, byte_t enemy, bool isMaximizing, int alpha, int beta) {
+int minimax(char** map, int N, int M, int K, char player, char enemy, bool isMaximizing, int alpha, int beta) {
     if (checkWinCond(map, N, M, K, player)) {
         return WIN;
     }

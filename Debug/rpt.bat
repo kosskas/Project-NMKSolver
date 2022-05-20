@@ -28,8 +28,6 @@ goto end
 if "%R_OK%"=="" goto end
 echo.
 echo Gratulacje. Twoje rozwiazanie dobrze rozwiazalo wszystkie testy z zestawu.
-echo Pamietaj jednak, ze ostatecznie bedzie oceniane na zupelnie innym
-echo zestawie testow.
 goto end
 
 :end
